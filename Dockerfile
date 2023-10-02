@@ -1,9 +1,9 @@
-FROM centos:6
+FROM tgagor/centos-stream:stream8
 
 # Install EPEL first or else tmux and multitail wont be installed
 COPY /entrypoint.d /usr/libexec/entrypoint.d/
 
-ARG OP5_MONITOR_SOFTWARE_URL=https://d2ubxhm80y3bwr.cloudfront.net/Downloads/op5_monitor_archive/Latest/op5-monitor-latest.tar.gz
+ARG OP5_MONITOR_SOFTWARE_URL=https://resources.itrsgroup.com/download/latest/OP5+Monitor+Installer?title=op5-monitor-9.7.tar.gz
 
 LABEL op5_version="OP5 Monitor Latest Version"
 LABEL maintainer="OP5,Ken Dobbins"
@@ -21,14 +21,18 @@ LICENSE_KEY=
 
 STOPSIGNAL SIGTERM
 
+
+
 RUN \
     yum -y install epel-release && \
-    yum -y install wget nc tmux multitail openssh-server python-requests && \
+    yum -y install wget nc tmux multitail openssh-server scl-utils python3 dnf && \
+    dnf -y install 'dnf-command(config-manager)' && \
+    source ~/.bashrc && \
     wget $OP5_MONITOR_SOFTWARE_URL -O /tmp/op5-software.tar.gz && \
     mkdir -p /tmp/op5-monitor && \
     tar -zxf /tmp/op5-software.tar.gz -C /tmp/op5-monitor --strip-components=1 && \
     cd /tmp/op5-monitor && \
-    ./install.sh --silent && \
+    ./install.sh --noninteractive && \
     rm -f /tmp/op5-software.tar.gz && \
     rm -rf /tmp/op5-monitor && \
     yum clean all && \
